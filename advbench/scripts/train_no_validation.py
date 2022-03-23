@@ -12,15 +12,15 @@ from advbench import attacks
 from advbench import hparams_registry
 from advbench.lib import misc, meters
 
-def main(args, hparams, test_hparams):
 
+def main(args, hparams, test_hparams):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     dataset = vars(datasets)[args.dataset](args.data_dir)
     train_ldr, val_ldr, test_ldr = datasets.to_loaders(dataset, hparams)
 
     algorithm = vars(algorithms)[args.algorithm](
-        dataset.INPUT_SHAPE, 
+        dataset.INPUT_SHAPE,
         dataset.NUM_CLASSES,
         hparams,
         device).to(device)
@@ -29,9 +29,10 @@ def main(args, hparams, test_hparams):
 
     test_attacks = {
         a: vars(attacks)[a](algorithm.classifier, test_hparams, device) for a in args.test_attacks}
-    
+
     columns = ['Epoch', 'Accuracy', 'Eval-Method', 'Split', 'Train-Alg', 'Dataset', 'Trial-Seed', 'Output-Dir']
     results_df = pd.DataFrame(columns=columns)
+
     def add_results_row(data):
         defaults = [args.algorithm, args.dataset, args.trial_seed, args.output_dir]
         results_df.loc[len(results_df)] = data + defaults
@@ -75,7 +76,7 @@ def main(args, hparams, test_hparams):
         total_time += epoch_end - epoch_start
 
         # print results
-        print(f'Epoch: {epoch+1}/{dataset.N_EPOCHS}\t', end='')
+        print(f'Epoch: {epoch + 1}/{dataset.N_EPOCHS}\t', end='')
         print(f'Epoch time: {format_timespan(epoch_end - epoch_start)}\t', end='')
         print(f'Total time: {format_timespan(total_time)}\t', end='')
         print(f'Training alg: {args.algorithm}\t', end='')
@@ -97,11 +98,12 @@ def main(args, hparams, test_hparams):
         algorithm.reset_meters()
 
     torch.save(
-        {'model': algorithm.state_dict()}, 
+        {'model': algorithm.state_dict()},
         os.path.join(args.output_dir, f'ckpt.pkl'))
 
     with open(os.path.join(args.output_dir, 'done'), 'w') as f:
         f.write('done')
+
 
 if __name__ == '__main__':
 
@@ -135,7 +137,7 @@ if __name__ == '__main__':
         seed = misc.seed_hash(args.hparams_seed, args.trial_seed)
         hparams = hparams_registry.random_hparams(args.algorithm, args.dataset, seed)
 
-    print ('Hparams:')
+    print('Hparams:')
     for k, v in sorted(hparams.items()):
         print(f'\t{k}: {v}')
 
